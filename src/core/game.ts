@@ -1,4 +1,5 @@
-import { levels } from '../types';
+import { wordsList } from '../services/words';
+import { getLevels } from '../views/levels';
 
 export default class Game {
     container: HTMLElement;
@@ -10,33 +11,26 @@ export default class Game {
     }
 
     start = async (): Promise<void> => {
-        await this.selectLevel();
+        await this.displayLevels();
         await this.render();
     };
 
-    selectLevel = async (): Promise<void> => {
-        this.container.append(
-            ...levels.map((level) => {
-                const btn = document.createElement('button') as HTMLButtonElement;
-                const span = document.createElement('span') as HTMLSpanElement;
-                btn.type = 'button';
-                btn.classList.add('words__level');
-                btn.style.backgroundColor = level.color;
-                span.classList.add(`words__level_${level.group}`);
-                span.innerText = `${level.group}`;
-                btn.addEventListener('click', async (): Promise<void> => this.chooseLevel(level.group));
-                btn.append(span);
-                return btn;
+    displayLevels = async (): Promise<void> => {
+        const levels = await getLevels();
+        levels.forEach((level) =>
+            level.addEventListener('click', () => {
+                console.log(level);
             })
         );
+        this.container.append(...levels);
     };
 
     chooseLevel = async (level: number): Promise<void> => {
-        const response = await fetch(`http://localhost:3001/words?group=${level}`);
-        if (response.ok) {
-            console.log(await response.json());
-        } else {
-            throw new Error(response.statusText);
+        try {
+            const words = await wordsList(0, level);
+            console.log(words);
+        } catch (error) {
+            console.log(error);
         }
     };
 
