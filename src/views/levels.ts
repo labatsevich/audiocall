@@ -9,7 +9,7 @@ export const getLevels = async (): Promise<HTMLButtonElement[]> => {
         btn.dataset.group = `${level.group}`;
         btn.style.backgroundColor = level.color;
         span.classList.add('words__level_item');
-        span.innerText = `${level.group}`;
+        span.innerText = `${level.group + 1}`;
         btn.append(span);
         return btn;
     });

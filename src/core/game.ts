@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { wordsList } from '../services/words';
+import { Word } from '../types';
 import { getLevels } from '../views/levels';
 
 export default class Game {
     container: HTMLElement;
     root: HTMLElement;
+
     constructor(root: HTMLElement) {
         this.container = <HTMLElement>document.createElement('div');
         this.container.className = 'game';
@@ -11,33 +14,36 @@ export default class Game {
     }
 
     start = async (): Promise<void> => {
-        await this.displayLevels();
+        await this.showLevels();
         await this.render();
     };
 
-    displayLevels = async (): Promise<void> => {
+    showLevels = async (): Promise<void> => {
         const levels = await getLevels();
         levels.forEach((level) =>
             level.addEventListener('click', () => {
-                console.log(level);
+                this.selectLevel(+level.dataset.group!);
             })
         );
         this.container.append(...levels);
     };
 
-    chooseLevel = async (level: number): Promise<void> => {
+    selectLevel = async (level: number): Promise<void> => {
         try {
             const words = await wordsList(0, level);
-            console.log(words);
+            if (typeof words !== 'undefined') {
+                this.render(words);
+            }
         } catch (error) {
             console.log(error);
         }
     };
 
-    render = async (): Promise<void> => {
+    render = async (words?: Word[]): Promise<void> => {
         while (this.root.firstChild) {
             this.root.removeChild(this.root.firstChild);
         }
+        console.log(words?.slice(0, 5));
         this.root.append(this.container);
     };
 }
