@@ -2,30 +2,39 @@
 import { wordsList } from '../services/words';
 import { Word } from '../types';
 import { drawlevels } from '../views/levels';
-import { nextWords } from '../views/next';
+import { nextWord } from '../views/next';
 
 export default class Game {
     root: HTMLElement;
+    progress: HTMLElement;
     container: HTMLElement;
+    next: HTMLButtonElement;
+
     words: Word[] = [];
     group: number;
-    next: HTMLButtonElement;
+    current: Word | undefined;
     count: number;
 
-    constructor(root: HTMLElement) {
+    selected: string[];
+    correct?: string[];
+    incorrect?: string[];
+
+    constructor(root: HTMLElement, group?: number) {
         this.root = root;
         this.container = <HTMLElement>document.createElement('div');
+        this.progress = <HTMLElement>document.createElement('div');
+        this.selected = [];
         this.count = 0;
-        this.group = 0;
+        this.group = group ?? 0;
         this.container.className = 'game';
         this.next = <HTMLButtonElement>document.createElement('button');
         this.next.classList.add('game__next_word');
-        this.next.innerText = `i dont know`;
+        this.next.innerText = `не знаю`;
         this.next.onclick = async () => this.onNext();
     }
 
     start = async (): Promise<void> => {
-        await this.showLevels();
+        if (!this.group) await this.showLevels();
         await this.render();
     };
 
@@ -41,8 +50,11 @@ export default class Game {
             const words = await wordsList(0, this.group);
             if (typeof words !== 'undefined') {
                 this.words = words;
-                const word = this.words[this.count];
-                await nextWords(this.container, word, this.words.slice(this.count, this.count + 4));
+                this.current = await this.getRandomWord();
+                console.log(this.current);
+                this.selected?.push(this.current.id);
+                const variants = this.words.slice(this.count + 1, this.count + 5);
+                await nextWord(this.container, this.current, variants);
                 this.container.append(this.next);
                 this.render();
             }
@@ -53,9 +65,13 @@ export default class Game {
 
     onNext = async (): Promise<void> => {
         this.count += 1;
-        const word = this.words[this.count];
+        this.current = await this.getRandomWord();
+        console.log(this.current);
+        this.selected.push(this.current.id);
+
+        const variants = this.words.slice(this.count + 1, this.count + 5);
         await this.clear(this.container);
-        await nextWords(this.container, word, this.words.slice(this.count + 1, this.count + 5));
+        await nextWord(this.container, this.current, variants);
         this.container.append(this.next);
         this.render();
     };
@@ -68,6 +84,20 @@ export default class Game {
 
     render = async (): Promise<void> => {
         this.clear(this.root);
-        this.root.append(this.container);
+        this.root.append(this.progress, this.container);
+    };
+
+    getRandomWord = async (): Promise<Word> => {
+        const filtered = this.words.filter((word) => !this.selected.includes(word.id));
+        const index = Math.floor(Math.random() * (this.words.length - this.selected.length));
+
+        return filtered[index];
+    };
+
+    getRandomWords = async (exclude: Word): Promise<Word[]> => {
+        const arr: Word[] = [];
+        arr.push(exclude);
+
+        return arr;
     };
 }

@@ -34,6 +34,10 @@
   }
   &__next_word{
     padding: 1rem;
-    background-color: #eaeaea;
+    background-color: #9328ff;
+    color: #ffffff;
+    &:hover{
+      box-shadow:  0 0 6px -1px #8f54c5;
+    }
   }
 }
