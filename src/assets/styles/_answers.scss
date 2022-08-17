@@ -5,6 +5,9 @@
   &__item{
     padding: .5rem 1rem;
     cursor: pointer;
+    &.correct{
+      background-color: rgba($color: lightgreen, $alpha: .5);
+    }
     &:hover{
       background-color: rgba($color: #ffffff, $alpha: 0.25);
       border-radius: 4px;

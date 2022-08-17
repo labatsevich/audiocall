@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { wordsList } from '../services/words';
+import { getWordsList } from '../services/words';
 import { Word } from '../types';
 import { drawlevels } from '../views/levels';
 import { nextWord } from '../views/next';
@@ -24,7 +24,7 @@ export default class Game {
         this.container = <HTMLElement>document.createElement('div');
         this.progress = <HTMLElement>document.createElement('div');
         this.selected = [];
-        this.count = 0;
+        this.count = 1;
         this.group = group ?? 0;
         this.container.className = 'game';
         this.next = <HTMLButtonElement>document.createElement('button');
@@ -47,13 +47,13 @@ export default class Game {
         await this.clear(this.container);
         this.group = level;
         try {
-            const words = await wordsList(0, this.group);
+            const words = await getWordsList(0, this.group);
             if (typeof words !== 'undefined') {
                 this.words = words;
                 this.current = await this.getRandomWord();
-                console.log(this.current);
+                const variants = await this.getRandomWords();
                 this.selected?.push(this.current.id);
-                const variants = this.words.slice(this.count + 1, this.count + 5);
+
                 await nextWord(this.container, this.current, variants);
                 this.container.append(this.next);
                 this.render();
@@ -64,16 +64,21 @@ export default class Game {
     };
 
     onNext = async (): Promise<void> => {
-        this.count += 1;
-        this.current = await this.getRandomWord();
-        console.log(this.current);
-        this.selected.push(this.current.id);
+        if (this.count === 20) {
+            alert('end of the game');
+            this.next.disabled = true;
+        } else this.count !== this.words.length;
+        {
+            this.count += 1;
+            this.current = await this.getRandomWord();
+            this.selected.push(this.current.id);
+            const variants = await this.getRandomWords();
 
-        const variants = this.words.slice(this.count + 1, this.count + 5);
-        await this.clear(this.container);
-        await nextWord(this.container, this.current, variants);
-        this.container.append(this.next);
-        this.render();
+            await this.clear(this.container);
+            await nextWord(this.container, this.current, variants);
+            this.container.append(this.next);
+            this.render();
+        }
     };
 
     clear = async (container: HTMLElement): Promise<void> => {
@@ -85,6 +90,13 @@ export default class Game {
     render = async (): Promise<void> => {
         this.clear(this.root);
         this.root.append(this.progress, this.container);
+        const answers = Array.from(this.container.querySelectorAll('.answers__item')) as HTMLElement[];
+        answers.forEach((item) => item.addEventListener('click', this.onClickVariant));
+    };
+
+    onClickVariant = async (e: MouseEvent): Promise<void> => {
+        const target = e.target as HTMLElement;
+        if (target.innerText === this.current?.wordTranslate) target.closest('label')?.classList.add('correct');
     };
 
     getRandomWord = async (): Promise<Word> => {
@@ -94,10 +106,16 @@ export default class Game {
         return filtered[index];
     };
 
-    getRandomWords = async (exclude: Word): Promise<Word[]> => {
+    getRandomWords = async (): Promise<Word[]> => {
         const arr: Word[] = [];
-        arr.push(exclude);
 
+        while (arr.length < 3) {
+            const index = Math.floor(Math.random() * (this.words.length - arr.length));
+            const next = this.words[index];
+
+            if (arr.every((item) => item.id !== next.id)) arr.push(next);
+        }
+        console.log(arr);
         return arr;
     };
 }
