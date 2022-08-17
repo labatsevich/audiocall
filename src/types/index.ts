@@ -20,6 +20,8 @@ export type Word = {
     textExampleTranslate: string;
 };
 
+export type TSelectHandler = (level: number) => Promise<void>;
+
 export const levels: GameLevel[] = [
     {
         group: 0,
