@@ -1,5 +1,6 @@
 import 'normalize.css';
 import './assets/styles/main.scss';
+
 import Game from './core/game';
 
 (async () => {

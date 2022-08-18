@@ -82,9 +82,21 @@ module.exports = {
                 type: 'asset/resource', // INSTEAD OF ['file-loader']?
             },
             {
-                test: /\.s[ac]ss$/, // FILE EXTENSION .SCSS
-                use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'], // WORK WITH SCSS
+                test: /\.(scss)$/, // FILE EXTENSION .SCSS
+                use: [
+                    'css-loader',
+                    'sass-loader',
+                    {
+                        loader: 'postcss-loader',
+                        options: {
+                            postcssOptions: {
+                                plugins: () => [require('autoprefixer')],
+                            },
+                        },
+                    },
+                ], // WORK WITH SCSS
             },
+
             {
                 test: /\.ts$/i,
                 use: 'ts-loader',

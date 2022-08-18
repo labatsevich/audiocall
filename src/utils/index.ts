@@ -6,3 +6,9 @@ export const shuffle = <T>(collection: T[]): T[] => {
     }
     return arr;
 };
+
+export const clear = async (container: HTMLElement): Promise<void> => {
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+};

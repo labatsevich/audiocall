@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { getWordsList } from '../services/words';
+import { getWords } from '../services/words';
 import { Word } from '../types';
-import { shuffle } from '../utils';
+import { clear, shuffle } from '../utils';
 import { drawlevels } from '../views/levels';
 import { nextWord } from '../views/next';
 import { showResult } from '../views/result';
@@ -43,15 +43,15 @@ export default class Game {
     };
 
     showLevels = async (): Promise<void> => {
-        await this.clear(this.container);
+        await clear(this.container);
         await drawlevels(this.container, this.onLevelSelect);
     };
 
     onLevelSelect = async (level: number): Promise<void> => {
-        await this.clear(this.container);
+        await clear(this.container);
         this.group = level;
         try {
-            const words = await getWordsList(0, this.group);
+            const words = await getWords(0, this.group);
             if (typeof words !== 'undefined') {
                 this.words = words;
                 this.current = await this.getRandomWord();
@@ -78,21 +78,15 @@ export default class Game {
             this.selected.push(this.current.id);
             const variants = await this.getRandomWords(this.current);
 
-            await this.clear(this.container);
+            await clear(this.container);
             await nextWord(this.container, this.current, variants);
             this.container.append(this.next);
             this.render();
         }
     };
 
-    clear = async (container: HTMLElement): Promise<void> => {
-        while (container.firstChild) {
-            container.removeChild(container.firstChild);
-        }
-    };
-
     render = async (): Promise<void> => {
-        this.clear(this.root);
+        clear(this.root);
         this.root.append(this.progress, this.container);
         this.next.innerText = nextDefaultText;
         const answers = Array.from(this.container.querySelectorAll('.answers__item')) as HTMLElement[];

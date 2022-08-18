@@ -8,7 +8,7 @@ export const showResult = (correct: Word[], incorrect: Word[]) => {
 
     heading.classList.add('game__result_heading');
     heading.innerText = 'Результат';
-    result.classList.add('game__result');
+    result.classList.add('modal game__result');
     correctHeading.classList.add('game__results_heading-correct');
     correctHeading.innerText = 'Верные';
     incorrectHeading.classList.add('game__results_heading-incorrect');
