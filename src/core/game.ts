@@ -68,20 +68,19 @@ export default class Game {
     };
 
     onNext = async (): Promise<void> => {
-        if (this.count === 20) {
+        this.count += 1;
+        this.current = await this.getRandomWord();
+        const variants = await this.getRandomWords(this.current);
+        this.selected.push(this.current.id);
+
+        await clear(this.container);
+        await nextWord(this.container, this.current, variants);
+        this.container.append(this.next);
+        this.render();
+
+        if (this.count === this.words.length) {
             this.next.disabled = true;
             await this.onEndGame();
-        } else this.count !== this.words.length;
-        {
-            this.count += 1;
-            this.current = await this.getRandomWord();
-            this.selected.push(this.current.id);
-            const variants = await this.getRandomWords(this.current);
-
-            await clear(this.container);
-            await nextWord(this.container, this.current, variants);
-            this.container.append(this.next);
-            this.render();
         }
     };
 
