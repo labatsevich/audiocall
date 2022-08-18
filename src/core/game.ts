@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import { getWordsList } from '../services/words';
 import { Word } from '../types';
+import { shuffle } from '../utils';
 import { drawlevels } from '../views/levels';
 import { nextWord } from '../views/next';
+import { showResult } from '../views/result';
+import { nextDefaultText, nextNextText } from './settings';
 
 export default class Game {
     root: HTMLElement;
@@ -16,8 +20,8 @@ export default class Game {
     count: number;
 
     selected: string[];
-    correct?: string[];
-    incorrect?: string[];
+    correct?: string[] = [];
+    incorrect?: string[] = [];
 
     constructor(root: HTMLElement, group?: number) {
         this.root = root;
@@ -29,7 +33,7 @@ export default class Game {
         this.container.className = 'game';
         this.next = <HTMLButtonElement>document.createElement('button');
         this.next.classList.add('game__next_word');
-        this.next.innerText = `не знаю`;
+        this.next.innerText = nextDefaultText;
         this.next.onclick = async () => this.onNext();
     }
 
@@ -51,7 +55,7 @@ export default class Game {
             if (typeof words !== 'undefined') {
                 this.words = words;
                 this.current = await this.getRandomWord();
-                const variants = await this.getRandomWords();
+                const variants = await this.getRandomWords(this.current);
                 this.selected?.push(this.current.id);
 
                 await nextWord(this.container, this.current, variants);
@@ -65,14 +69,14 @@ export default class Game {
 
     onNext = async (): Promise<void> => {
         if (this.count === 20) {
-            alert('end of the game');
             this.next.disabled = true;
+            await this.onEndGame();
         } else this.count !== this.words.length;
         {
             this.count += 1;
             this.current = await this.getRandomWord();
             this.selected.push(this.current.id);
-            const variants = await this.getRandomWords();
+            const variants = await this.getRandomWords(this.current);
 
             await this.clear(this.container);
             await nextWord(this.container, this.current, variants);
@@ -90,13 +94,33 @@ export default class Game {
     render = async (): Promise<void> => {
         this.clear(this.root);
         this.root.append(this.progress, this.container);
+        this.next.innerText = nextDefaultText;
         const answers = Array.from(this.container.querySelectorAll('.answers__item')) as HTMLElement[];
         answers.forEach((item) => item.addEventListener('click', this.onClickVariant));
     };
 
     onClickVariant = async (e: MouseEvent): Promise<void> => {
         const target = e.target as HTMLElement;
-        if (target.innerText === this.current?.wordTranslate) target.closest('label')?.classList.add('correct');
+        this.wordCardUpdate();
+
+        if (target.closest('.answers__item') && target.innerText === this.current?.wordTranslate) {
+            const label = target.parentElement;
+            label?.classList.add('correct');
+            this.correct?.push(this.current.id);
+        } else {
+            const label = target.parentElement;
+            label?.classList.add('incorrect');
+            const answers = Array.from(this.container.querySelectorAll('.answers__item')) as HTMLElement[];
+            answers.forEach((item) => item.removeEventListener('click', this.onClickVariant));
+            if (this.current) this.incorrect?.push(this.current.id);
+        }
+    };
+
+    onEndGame = async (): Promise<void> => {
+        this.next.disabled = true;
+        const correct = this.words.filter((item) => this.correct?.includes(item.id));
+        const incorrect = this.words.filter((item) => this.incorrect?.includes(item.id));
+        showResult(correct, incorrect);
     };
 
     getRandomWord = async (): Promise<Word> => {
@@ -106,16 +130,20 @@ export default class Game {
         return filtered[index];
     };
 
-    getRandomWords = async (): Promise<Word[]> => {
+    getRandomWords = async (current: Word): Promise<Word[]> => {
         const arr: Word[] = [];
-
-        while (arr.length < 3) {
-            const index = Math.floor(Math.random() * (this.words.length - arr.length));
+        arr.push(current);
+        while (arr.length < 4) {
+            const index = Math.floor(Math.random() * this.words.length);
             const next = this.words[index];
-
-            if (arr.every((item) => item.id !== next.id)) arr.push(next);
+            if (!arr.includes(next)) arr.push(next);
         }
-        console.log(arr);
-        return arr;
+        return shuffle(arr);
+    };
+
+    wordCardUpdate = () => {
+        const image = this.container.querySelector('.word__image img') as HTMLImageElement;
+        this.next.innerText = nextNextText;
+        image.style.display = 'block';
     };
 }
