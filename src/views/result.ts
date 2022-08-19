@@ -1,3 +1,4 @@
+import { soundIcon } from '../core/settings';
 import { Word } from '../types';
 
 const closeResult = (modal: HTMLElement) => {
@@ -27,8 +28,22 @@ export const showResult = (correct: Word[], incorrect: Word[]) => {
         </div>`
     );
 
-    body.innerHTML += correct.map((word) => `<p class="correct">${word.word}</p>`).join('');
-    body.innerHTML += incorrect.map((word) => `<p class="incorrect">${word.word}</p>`).join('');
+    body.innerHTML += `<ul class='correct__answers'>
+        ${correct
+            .map(
+                (word) =>
+                    `<li class="correct__answers_item"><span>${soundIcon}</span><span>${word.word}</span><span>${word.wordTranslate}</span></li>`
+            )
+            .join('')}
+    </ul>`;
+    body.innerHTML += `<ul class="incorrect__answers">
+        ${incorrect
+            .map(
+                (word) =>
+                    `<li class="incorrect__answers_item"><span>${soundIcon}</span><span>${word.word}</span><span>${word.wordTranslate}</span></li>`
+            )
+            .join('')}
+     </ul>`;
 
     content.append(body);
     dialog.append(content);

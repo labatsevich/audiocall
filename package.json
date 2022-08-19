@@ -23,6 +23,7 @@
         "@typescript-eslint/eslint-plugin": "^5.31.0",
         "@typescript-eslint/parser": "^5.31.0",
         "autoprefixer": "^10.4.8",
+        "bootstrap-scss": "^4.6.2",
         "clean-webpack-plugin": "^4.0.0",
         "copy-webpack-plugin": "^10.2.4",
         "cross-env": "^7.0.3",
@@ -62,7 +63,6 @@
         "xml-loader": "^1.2.1"
     },
     "dependencies": {
-        "bootstrap-scss": "^4.6.2",
         "normalize.css": "^8.0.1",
         "typescript": "^4.7.4"
     }

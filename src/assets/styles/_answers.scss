@@ -38,3 +38,23 @@
     }
   }
 }
+
+.correct__answers,
+.incorrect__answers{
+  list-style: none;
+}
+
+.correct__answers,
+.incorrect__answers{
+    &_item{
+      & span{
+        &:first-of-type{
+          svg{
+            width: 24px;
+            height: 24px;
+            fill: #777;
+          }
+        }
+      }
+  }
+}
